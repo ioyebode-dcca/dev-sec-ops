@@ -1,0 +1,80 @@
+#!/usr/bin/env groovy
+
+@Library("devsecopsSharedLibrary") _
+
+node('master') {
+
+  skipDefaultCheckout()
+
+  stage('Cleanup WS') {
+    cleanWs(disableDeferredWipeout: false, deleteDirs: true)
+  }
+
+  stage('Checkout SCM') {
+    checkout scm
+
+    env.terraformHome = "${WORKSPACE}/terraform/macfin_tf"
+    env.ansibleHome = "${WORKSPACE}/ansible"
+    env.inspecHome = "${WORKSPACE}/inspec"
+
+
+    timeout(time: 3, unit: 'MINUTES') {
+      env.deployAction = input message: "INFRASTRUCTURE PIPELINE", ok: "Proceed",
+      parameters: [choice(name: '', choices: 'Deploy-New-Gold-AMI\nTerraform-Config-Change\nAnsible-Config-Change', description: 'Select Action To Be Performed')]
+    }
+
+    timeout(time: 3, unit: 'MINUTES') {
+      env.deployEnv = input message: "INFRASTRUCTURE PIPELINE", ok: "Deploy",
+      parameters: [choice(name: '', choices: 'dev\ntest\nimpl\ndevp\nimplp\ntrn\nprod\ndvtst', description: 'Select Environment')]
+    }
+
+    if(deployEnv.equals('implp') || deployEnv.equals('trn') || deployEnv.equals('prod') || deployEnv.equals('dvtst')) {
+      timeout(time: 3, unit: 'MINUTES') {
+        env.jiraId = input message: "INFRASTRUCTURE PIPELINE", ok: "Proceed",
+        parameters: [string(name: '', description: 'Enter Approved JIRA ID')]
+      }
+    } else {
+      println "No JIRA issue for lower environments"
+    }
+  }
+
+  // Verify all tools and integrations are in place before starting the pipeline
+  infraVerify()
+
+
+  // Verify Jira Issue is approved
+  infraChangeMgmt()
+
+  // Review Changes Before Proceeding with the pipeline
+  infraReviewChanges()
+
+  // Backup Existing Infrastructure
+  infraBackup()
+
+  // Provision AWS Resources
+  infraProvisionAwsResources()
+
+  // Download Software Binaries from s3
+  infraDownloadSoftware()
+
+  // Configure Custom Os Settings
+  infraConfigureOs()
+
+  // Install and Configure MACFIN application stack
+  infraConfigureApplication()
+
+  // Deploy Latest Code
+  infraDeployCode()
+
+  // Chef Inspec Scans
+  infraInspecScan()
+
+  // Create Confluence page
+  infraCreateConfluencePage()
+
+  // Upload reports to confluenceent
+  infraGenerateReports()
+
+  // Post tasks
+  infraPostTasks()
+}
