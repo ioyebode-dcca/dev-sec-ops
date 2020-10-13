@@ -1,0 +1,8 @@
+---
+
+- name: Restart AMQ Services
+  systemd:
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+    name: activemq

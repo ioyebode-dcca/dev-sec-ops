@@ -1,0 +1,15 @@
+---
+
+pckgs:
+  - java-1.8.0-openjdk
+  - unzip
+
+amq_usr: activemq
+amq_usr_id: 400
+amq_grp: activemq
+amq_grp_id: 400
+
+amq_hm: /opt/activemq
+amq_instll_fl_systm: /app
+amq_instll_dr: "{{ amq_instll_fl_systm }}/apache-activemq-5.15.8"
+amq_instll_fl: apache-activemq-5.15.8-bin.tar.gz

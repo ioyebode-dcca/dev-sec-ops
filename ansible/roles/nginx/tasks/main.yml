@@ -1,0 +1,31 @@
+---
+# tasks file for nginx
+
+- name: Install NGINX
+  yum:
+    name: "{{ nginx_version }}"
+    state: present
+  notify:
+    - Restart Nginx
+
+- name: Get HTTPD_CAN_NETWORK_CONNECT Status
+  command:
+    cmd: getsebool httpd_can_network_connect
+  register: sestatus
+  changed_when: sestatus.stdout == "httpd_can_network_connect --> off"
+
+- name: Check vars
+  debug:
+    msg: "{{ sestatus }}"
+
+- name: Set HTTPD_CAN_NETWORK_CONNECT Flag On And Keep It Persistent Across Reboots
+  command:
+    cmd: setsebool -P httpd_can_network_connect 1
+  when: sestatus.stdout == "httpd_can_network_connect --> off"
+
+- name: Copy NGINX Config File
+  template:
+    src: "{{ nginx_conf_template }}"
+    dest: "{{ nginx_conf_file_path }}"
+  notify:
+    - reload nginx

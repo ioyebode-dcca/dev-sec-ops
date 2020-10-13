@@ -1,0 +1,103 @@
+--- #Playbook For Infrastructure Pipeline
+
+- hosts: os-config-az-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+
+  roles:
+    - {role: 'roles/lvm', tags: 'lvm-az'}
+    - {role: 'roles/smtp', tags: 'smtp-az'}
+    - {role: 'roles/newRelic', tags: 'newrelic-az'}
+    - {role: 'roles/redhatHardening', tags: 'redhatHardening-az'}
+
+
+- hosts: os-config-dz-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+
+  roles:
+    - {role: 'roles/lvm', tags: 'lvm-dz'}
+    - {role: 'roles/smtp', tags: 'smtp-dz'}
+    - {role: 'roles/newRelic', tags: 'newrelic-dz'}
+    - {role: 'roles/redhatHardening', tags: 'redhatHardening-dz'}
+
+
+- hosts: fuse-az-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+
+  pre_tasks:
+    - setup:
+        filter: "ansible_*"
+      tags:
+        - fuseaz
+
+  roles:
+    - {role: 'roles_v2/fuse_az', tags: 'fuseaz'}
+
+
+- hosts: amq-dz-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+  pre_tasks:
+    - setup:
+        filter: "ansible_*"
+      tags:
+        - amq
+
+  roles:
+    - {role: 'roles_v2/activemq_dz', tags: 'amq'}
+
+
+- hosts: fuse-dz-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+  pre_tasks:
+    - setup:
+        filter: "ansible_*"
+      tags:
+        - fusedz
+
+  roles:
+    - {role: 'roles_v2/fuse_dz', tags: 'fusedz'}
+
+
+- hosts: rhpam-dz-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+  pre_tasks:
+    - setup:
+        filter: "ansible_*"
+      tags:
+        - rhpam
+
+  roles:
+    - {role: 'roles_v2/rhpam_dz', tags: 'rhpam'}
+
+
+- hosts: nifi-dz-{{ lookup('env', 'deployEnv') }}
+  user: ec2-user
+  become: true
+  connection: ssh
+  gather_facts: no
+  pre_tasks:
+    - setup:
+        filter: "ansible_*"
+      tags:
+        - nifi
+
+  roles:
+    - {role: 'roles/nifi', tags: 'nifi'}
+    - {role: 'roles/nginx', tags: 'nginx'}

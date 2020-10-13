@@ -1,0 +1,72 @@
+---
+
+- name: Install Prereq Packages
+  yum:
+    name: "{{ pckgs }}"
+    state: latest
+
+- name: Create Activemq Group
+  group:
+    name: "{{ amq_grp }}"
+    gid: "{{ amq_grp_id }}"
+
+- name: Create Activemq User
+  user:
+    name: "{{ amq_usr }}"
+    group: "{{ amq_grp }}"
+    uid: "{{ amq_usr_id }}"
+    comment: "Activemq Service Account"
+
+- name: Install Activemq
+  unarchive:
+    src: "{{ amq_instll_fl }}"
+    dest: "{{ amq_instll_fl_systm }}"
+    owner: "{{ amq_usr }}"
+    group: "{{ amq_grp }}"
+    creates: "{{ amq_hm }}/bin/activemq"
+  register: activemqInstalled
+
+- name: Display Registered variables for Troubleshooting purposes
+  debug:
+    var: activemqInstalled
+
+- name: Create SymLink
+  file:
+    src: "{{ amq_instll_dr }}"
+    dest: "{{ amq_hm }}"
+    state: link
+
+- name: Copy AMQ Config File
+  template:
+    src: activemq.xml.j2
+    dest: /opt/activemq/conf/activemq.xml
+    owner: activemq
+    group: activemq
+    mode: 0644
+    backup: yes
+  notify: Restart AMQ Services
+
+
+- name: Copy Jetty  Config File
+  template:
+    src: jetty-realm.properties.j2
+    dest: /opt/activemq/conf/jetty-realm.properties
+    owner: activemq
+    group: activemq
+    mode: 0644
+    backup: yes
+  notify: Restart AMQ Services
+
+
+- name: Create systemd unit
+  template:
+    src: activemq.service.j2
+    dest: /etc/systemd/system/activemq.service
+
+- name: Reload systemd
+  systemd:
+    daemon-reload: yes
+    enabled: yes
+    state: started
+    name: activemq
+  when: activemqInstalled.changed

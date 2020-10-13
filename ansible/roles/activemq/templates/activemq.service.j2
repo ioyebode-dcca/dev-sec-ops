@@ -1,0 +1,15 @@
+[Unit]
+Description=Apache ActiveMQ
+After=network-online.target
+
+[Service]
+Type=forking
+PIDFile={{amq_hm}}/data/activemq.pid
+WorkingDirectory={{amq_hm}}/bin
+ExecStart={{amq_hm}}/bin/activemq start
+ExecStop={{amq_hm}}/bin/activemq stop
+Restart=on-abort
+User={{amq_usr}}
+
+[Install]
+WantedBy=multi-user.target

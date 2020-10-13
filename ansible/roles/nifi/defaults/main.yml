@@ -1,0 +1,24 @@
+---
+
+pckgs:
+  - java-1.8.0-openjdk
+  - unzip
+
+nifi_usr: nifi
+nifi_usr_id: 400
+nifi_grp: nifi
+nifi_grp_id: 400
+
+nifi_hm: /opt/nifi
+nifi_instll_flsystm: /app1
+nifi_instll_fl: nifi-1.10.0-bin.zip
+nifi_instll_dr: "{{ nifi_instll_flsystm }}/nifi-1.10.0"
+
+efs_mount_dir: /app1
+
+mount_target_ip: "{{ efs_target_ip }}"
+
+backpressure_count: "nifi.queue.backpressure.count=20000"
+backpressure_size: "nifi.queue.backpressure.size=2 GB"
+java_heap_2: "java.arg.2=-Xms5096m"
+java_heap_3: "java.arg.3=-Xms5096m"
